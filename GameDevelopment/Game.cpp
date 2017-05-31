@@ -4,12 +4,15 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "Resources\Music\CueSheet_0.h"
 #include <sstream>
 
 #include <WICTextureLoader.h>
 #include <DDSTextureLoader.h>
 #include <CommonStates.h>
 
+#include "ADX2Le.h"
+#include "Resources/Music/Basic.h"
 extern void ExitGame();
 
 using namespace DirectX;
@@ -22,6 +25,11 @@ Game::Game() :
     m_outputHeight(600),
     m_featureLevel(D3D_FEATURE_LEVEL_9_1)
 {
+}
+
+Game::~Game()
+{
+
 }
 
 // Initialize the Direct3D resources required to run.
@@ -77,6 +85,24 @@ void Game::Initialize(HWND window, int width, int height)
 	m_screenPos.x = m_outputWidth / 2.f;
 	m_screenPos.y = m_outputHeight / 2.f;
 
+	//キーボードのオブジェクト生成
+	m_keyboard = std::make_unique<Keyboard>();
+
+	//マウスの生成
+	m_mouse = std::make_unique<Mouse>();
+	//ウィンドウハンドラを通知
+	m_mouse->SetWindow(window);
+
+	ADX2Le::Initialize("Resources/Music/NewProject.acf");
+
+	ADX2Le::LoadAcb("Resources/Music/CueSheet_0.acb");
+
+	ADX2Le::Play(CRI_BASIC_MUSIC1);
+
+	m_gamepad = std::make_unique<GamePad>();
+
+	m_pJoyPad = std::make_unique<JoyPad>();
+	m_pJoyPad->Initialize(window);
 }
 
 // Executes the basic game loop.
@@ -94,6 +120,10 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
+	//サウンドライブラリの毎フレーム更新
+	ADX2Le::Update();
+
+
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
@@ -106,6 +136,160 @@ void Game::Update(DX::StepTimer const& timer)
 	ss << L"aiueo" << m_cnt;
 
 	m_str = ss.str();
+
+
+	if (m_KeybordTracker.IsKeyPressed(Keyboard::Keys::Back))
+	{
+		m_str = L".IsKeyPressedBACK";
+	}
+	if (m_KeybordTracker.IsKeyReleased(Keyboard::Keys::Back))
+	{
+		m_str = L"IsKeyReleasedBACK";
+	}
+
+	//キーボードの様態を取得
+	Keyboard::State kb = m_keyboard->GetState();
+	//キーボードトラッカーの更新
+	m_KeybordTracker.Update(kb);
+	if (kb.Back)
+	{
+		// Backspace key is down
+		m_str = L"BlackSpace";
+
+	}
+	if (kb.W)
+		// W key is down
+
+		if (kb.A)
+			// A key is down
+
+			if (kb.S)
+				// S key is down
+
+				if (kb.D)
+					// D key is down
+
+					if (kb.LeftShift)
+						// Left shift key is down
+
+						if (kb.RightShift)
+						{
+			}
+	//m_screenPos = 
+	//マウスの状態を取得
+	Mouse::State state = m_mouse->GetState();
+	//m_tracker
+
+	//if (state.leftButton)
+	//{
+	//	m_str = L"left";
+	//}
+	if (m_tracker.rightButton == Mouse::ButtonStateTracker::PRESSED) {
+
+	}
+	XMFLOAT2 mousePosInPixels(float(state.x), float(state.y));
+	
+		// Left button is down
+	// Right shift key is down
+
+	//if (kb.IsKeyDown(VK_RETURN))
+	// Return key is down
+
+	//ゲームパッドの状態を取得
+	DirectX::GamePad::State padstate = m_gamepad->GetState(0, GamePad::DEAD_ZONE_CIRCULAR);
+
+	static bool mood = false;
+	bool attack = false;
+	bool guard = false;
+
+	//コントローラーが接続さているか
+	if (padstate.IsConnected())
+	{
+		//Aボタンが押されているか
+		if (padstate.IsAPressed())
+		{
+			if (mood)
+			{
+
+				attack = true;
+			}
+			else
+			{
+				guard = true;
+			}
+		}
+		else
+		{
+			if (mood)
+			{
+				attack = false;
+			}
+			else
+			{
+				guard = false;
+			}
+	}
+
+
+		//Bボタンが押されているか
+		if (padstate.IsBPressed())
+		{
+			if (mood)
+			{
+
+				guard = true;
+			}
+			else
+			{
+				attack = true;
+			}
+		}
+		else
+		{
+			if (mood)
+			{
+				guard = false;
+			}
+			else
+			{
+				attack = false;
+			}
+		}
+
+		m_gamepadtracker.Update(padstate);
+
+		if (m_gamepadtracker.back == GamePad::ButtonStateTracker::PRESSED)
+		{
+			if (mood)
+			{
+				mood = false;
+			}
+			else
+			{
+				mood = true;
+			}
+		}
+
+
+		//右スティック左下
+		float posx = padstate.thumbSticks.leftX;
+		//左スティック上下
+		float posy = padstate.thumbSticks.leftY;
+		//右トリガーがどれだけ押されているか(0~1)
+		float throttle = padstate.triggers.right;
+
+
+		if (attack)
+		{
+			m_str = L"attack";
+		}
+		if (guard)
+		{
+			m_str = L"guard";
+		}
+		//振動の設定
+		m_gamepad->SetVibration(0, 1.0f, 1.0f);
+	}
 }
 
 // Draws the scene.
@@ -116,6 +300,8 @@ void Game::Render()
     {
         return;
     }
+
+
 
     Clear();
 
@@ -139,6 +325,8 @@ void Game::Render()
 		, m_origin);
 	m_spriteBatch->End();
 	Present();
+
+
 }
 
 // Helper method to clear the back buffers.

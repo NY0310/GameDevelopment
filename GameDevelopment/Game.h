@@ -3,10 +3,14 @@
 //
 
 #pragma once
+#include <GamePad.h>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <SimpleMath.h>
+#include <Keyboard.h>
+#include <Mouse.h>
 #include "StepTimer.h"
+#include "JoyPad.h"
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -16,7 +20,7 @@ class Game
 public:
 
     Game();
-
+	virtual ~Game();
     // Initialization and management
     void Initialize(HWND window, int width, int height);
 
@@ -79,5 +83,21 @@ private:
 	DirectX::SimpleMath::Vector2 m_screenPos;
 	//スプライトの原点
 	DirectX::SimpleMath::Vector2 m_origin;
+	//キーボード
+	std::unique_ptr<DirectX::Keyboard>m_keyboard;
+	//キーボードトラッカー
+	DirectX::Keyboard::KeyboardStateTracker m_KeybordTracker;
+
+	//マウス
+	std::unique_ptr<DirectX::Mouse> m_mouse;
+	//マウストラッカー
+	DirectX::Mouse::ButtonStateTracker m_tracker;
+
+	//ゲームパッド
+	std::unique_ptr<DirectX::GamePad> m_gamepad;
+	//ゲームパッドトラッカー
+	DirectX::GamePad::ButtonStateTracker m_gamepadtracker;
+
+	std::unique_ptr<JoyPad> m_pJoyPad;
 
 };
